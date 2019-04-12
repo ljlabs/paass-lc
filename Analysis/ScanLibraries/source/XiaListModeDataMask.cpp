@@ -36,9 +36,11 @@ FIRMWARE XiaListModeDataMask::ConvertStringToFirmware(const std::string &type) {
         firmware = R30980;
     else if (firmwareNumber >= 30981 && firmwareNumber < 34455)
         firmware = R30981;
-    else if (firmwareNumber >= 34455) {
+    else if (firmwareNumber >= 34455 && firmwareNumber < 34703)
         firmware = R34688;
-        if(firmwareNumber > 34688)
+    else if (firmwareNumber = 34703){
+        firmware = R34703;
+        if(firmwareNumber > 35000)
             cout << "XiaListModeDataMask::ConvertStringToFirmware :  You requested a firmware number that's higher "
                     "than the last known number. You should confirm that headers has the same format !!" << endl;
     } else
@@ -122,6 +124,10 @@ const {
             mask = 0x7FFE0000;
             bit = 17;
             break;
+        case R34703:
+            mask = 0x7FFE0000;
+            bit = 17;
+            break;
         default:
             break;
     }
@@ -142,6 +148,10 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdForcedTriggerBitMask
                 mask = 0x80000000;
                 bit = 31;
                 break;
+            case R34703:
+                mask = 0x80000000;
+                bit = 31;
+                break;
             default:
                 break;
         }
@@ -151,6 +161,10 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdForcedTriggerBitMask
             case R30980:
             case R30981:
             case R34688:
+                mask = 0x80000000;
+                bit = 31;
+                break;
+            case R34703:
                 mask = 0x80000000;
                 bit = 31;
                 break;
@@ -180,6 +194,10 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdTriggerSourceMask() 
                 mask = 0x40000000;
                 bit = 30;
                 break;
+            case R34703:
+                mask = 0x40000000;
+                bit = 31;
+                break;
             default:
                 break;
         }
@@ -190,6 +208,10 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdTriggerSourceMask() 
             case R30980:
             case R30981:
             case R34688:
+                mask = 0xE0000000;
+                bit = 29;
+                break;
+            case R34703:
                 mask = 0xE0000000;
                 bit = 29;
                 break;
@@ -218,6 +240,9 @@ const {
         case R20466:
         case R27361:
         case R34688:
+            mask = 0x0000FFFF;
+            break;
+        case R34703:
             mask = 0x0000FFFF;
             break;
         default:
@@ -252,6 +277,10 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetTraceOutOfRangeFlagMask
             mask = 0x80000000;
             bit = 31;
             break;
+        case R34703:
+            mask = 0x80000000;
+            bit = 31;
+            break;
         default:
             break;
     }
@@ -264,6 +293,7 @@ const {
     if (firmware_ == UNKNOWN || frequency_ == 0)
         throw invalid_argument(BadMaskErrorMessage("GetTraceLengthMask"));
     unsigned int mask = 0;
+    unsigned int bit = 16;
     switch (firmware_) {
         case R17562:
         case R20466:
@@ -277,10 +307,14 @@ const {
         case R34688:
             mask = 0x7FFF0000;
             break;
+        case R34703:
+            mask = 0x7FFF0000;
+            bit = 31;
+            break;
         default:
             break;
     }
-    return make_pair(mask, 16);
+    return make_pair(mask, bit);
 }
 
 string XiaListModeDataMask::BadMaskErrorMessage(const std::string &func) const {
@@ -310,6 +344,9 @@ double XiaListModeDataMask::GetCfdSize() const {
             case R34688:
                 val = 32768;
                 break;
+            case R34703:
+                val = 65532;
+                break;
             default:
                 break;
         }
@@ -327,6 +364,9 @@ double XiaListModeDataMask::GetCfdSize() const {
             case R34688:
             case R30474:
                 val = 16384;
+                break;
+            case R34703:
+                val = 65532;
                 break;
             default:
                 break;

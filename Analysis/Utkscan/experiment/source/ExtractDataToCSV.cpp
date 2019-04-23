@@ -77,7 +77,7 @@ bool ExtractDataToCSV::Process(RawEvent &event) {
     try {
         for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
     
-            double time = (*it)->GetTime();
+            double time = (*it)->GetHighResTimeInNs();
             double energyChannel = (*it)->GetEnergy();
             int slot = (*it)->GetChanID().GetLocation();
             int channel = (*it)->GetChannelNumber();

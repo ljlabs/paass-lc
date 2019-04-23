@@ -61,9 +61,7 @@ DetectorDriver::~DetectorDriver() {
 
     for (vector<TraceAnalyzer *>::iterator it = vecAnalyzer.begin(); it != vecAnalyzer.end(); it++)
         delete (*it);
-    vecAnalyzer.clear();        
-    // DetectorDriverXmlParser parser;
-    // // parser.ParseNode(this);
+    vecAnalyzer.clear();
 
     ///@TODO : Figure out a better place for this to go. For now we'll leave it here. This will close our our ROOT
     /// File properly.
@@ -102,11 +100,8 @@ void DetectorDriver::ProcessEvent(RawEvent &rawev) {
 
             double time = (*it)->GetTime();
             double energy = (*it)->GetCalibratedEnergy();
-            double energyChannel = (*it)->GetEnergy();
             int location = (*it)->GetChanID().GetLocation();
-            int channel = (*it)->GetChannelNumber();
-            
-            // cout << endl;
+
             EventData data(time, energy, location);
             TreeCorrelator::get()->place(place)->activate(data);
         }
@@ -114,16 +109,13 @@ void DetectorDriver::ProcessEvent(RawEvent &rawev) {
         //!First round is preprocessing, where process result must be guaranteed
         //!to not to be dependent on results of other Processors.
         for (vector<EventProcessor *>::iterator iProc = vecProcess.begin(); iProc != vecProcess.end(); iProc++)
-            if ((*iProc)->HasEvent()){
+            if ((*iProc)->HasEvent())
                 (*iProc)->PreProcess(rawev);
-            }
         ///In the second round the Process is called, which may depend on other
         ///Processors.
-        for (vector<EventProcessor *>::iterator iProc = vecProcess.begin(); iProc != vecProcess.end(); iProc++){
-            if ((*iProc)->HasEvent()){
+        for (vector<EventProcessor *>::iterator iProc = vecProcess.begin(); iProc != vecProcess.end(); iProc++)
+            if ((*iProc)->HasEvent())
                 (*iProc)->Process(rawev);
-            }
-        }
         // Clear all places in correlator (if of resetable type)
         for (map<string, Place *>::iterator it = TreeCorrelator::get()->places_.begin();
              it != TreeCorrelator::get()->places_.end(); ++it)

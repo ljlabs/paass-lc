@@ -77,13 +77,13 @@ bool ExtractDataToCSV::Process(RawEvent &event) {
     try {
         for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
     
-            double time = (*it)->GetHighResTimeInNs();
+            double time = (*it)->GetTime();
             double energyChannel = (*it)->GetEnergy();
             int slot = (*it)->GetChanID().GetLocation();
             int channel = (*it)->GetChannelNumber();
             
             // cout << endl;
-            FILE *fp = fopen("/home/kyle/Documents/workspace/honsPhy/paass-lc/install/bin/kyle/example.txt","a");
+            FILE *fp = fopen("./example.txt","a");
             // time,energyChannel,slot,chanel <-- csv
             fprintf(fp, "%f,%f,%i,%i \n", time, energyChannel, slot, channel);
             fclose(fp);

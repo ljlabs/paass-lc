@@ -208,7 +208,7 @@ unsigned int XiaListModeDataDecoder::DecodeWordThree(const unsigned int &word, X
     //Reverse the logic that we used in DecodeWordZero, since if we do not
     // have these three firmwares we need to check this word for the
     // Trace-Out-of-Range flag.
-    switch (mask.GetFirmware()) {
+    switch (mask.GetFirmware()) {   
         case R17562:
         case R20466:
         case R27361:

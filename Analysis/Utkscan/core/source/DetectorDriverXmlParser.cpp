@@ -50,6 +50,7 @@
 #include "TemplateExpProcessor.hpp"
 #include "TwoChanTimingProcessor.hpp"
 #include "VandleOrnl2012Processor.hpp"
+#include "ExtractDataToCSV.hpp"
 
 using namespace std;
 
@@ -139,8 +140,14 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
                     processor.attribute("NumStarts").as_uint(1), processor.attribute("compression").as_double(1.0)));
         } else if (name == "TemplateExpProcessor") {
             vecProcess.push_back(new TemplateExpProcessor());
+        } else if (name == "ExtractDataToCSV") {
+            vecProcess.push_back(new ExtractDataToCSV(
+                processor.attribute("gcut").as_double(0.0)
+            ));
         } else if (name == "E11027Processor") {
             vecProcess.push_back(new E11027Processor());
+        } else if (name == "TemplateExpProcessor") {
+            vecProcess.push_back(new TemplateExpProcessor());
         } else if (name == "TemplateExpProcessor") {
             vecProcess.push_back(new TemplateExpProcessor());
         } else if (name == "Anl1471Processor") {

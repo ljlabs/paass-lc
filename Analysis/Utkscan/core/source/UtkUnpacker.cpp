@@ -123,6 +123,7 @@ void UtkUnpacker::ProcessRawEvent() {
     }//for(deque<PixieData*>::iterator
 
     try {
+        driver_->Init(rawev);
         driver_->ProcessEvent(rawev);
         rawev.Zero(usedDetectors);
         usedDetectors.clear();

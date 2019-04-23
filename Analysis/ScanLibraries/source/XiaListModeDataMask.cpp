@@ -38,7 +38,7 @@ FIRMWARE XiaListModeDataMask::ConvertStringToFirmware(const std::string &type) {
         firmware = R30981;
     else if (firmwareNumber >= 34455 && firmwareNumber < 34703)
         firmware = R34688;
-    else if (firmwareNumber = 34703){
+    else if (firmwareNumber == 34703){
         firmware = R34703;
         if(firmwareNumber > 35000)
             cout << "XiaListModeDataMask::ConvertStringToFirmware :  You requested a firmware number that's higher "
@@ -84,6 +84,9 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdFractionalTimeMask()
             case R34688:
                 mask = 0x3FFF0000;
                 break;
+            case R34703:
+                mask = 0x3FFF0000;
+                break;
             default:
                 break;
         }
@@ -94,6 +97,9 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdFractionalTimeMask()
             case R30980:
             case R30981:
             case R34688:
+                mask = 0x1FFF0000;
+                break;
+            case R34703:
                 mask = 0x1FFF0000;
                 break;
             default:
@@ -124,7 +130,7 @@ const {
             mask = 0x7FFE0000;
             bit = 17;
             break;
-        case R34703:
+        case R34703: 
             mask = 0x7FFE0000;
             bit = 17;
             break;
@@ -278,8 +284,8 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetTraceOutOfRangeFlagMask
             bit = 31;
             break;
         case R34703:
-            mask = 0x80000000;
-            bit = 31;
+            mask = 0x80000000; // this seems the most correct
+            bit = 31; // this seems correct using the bit 15 misses the second channel
             break;
         default:
             break;
@@ -288,6 +294,7 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetTraceOutOfRangeFlagMask
 }
 
 //Trace Length always starts on bit 16 of Word 3.
+// can happen some where else <<< --- kyle
 pair<unsigned int, unsigned int> XiaListModeDataMask::GetTraceLengthMask()
 const {
     if (firmware_ == UNKNOWN || frequency_ == 0)
@@ -308,8 +315,8 @@ const {
             mask = 0x7FFF0000;
             break;
         case R34703:
-            mask = 0x7FFF0000;
-            bit = 31;
+            mask = 0x0000FFF7;
+            bit = 16;
             break;
         default:
             break;

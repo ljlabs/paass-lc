@@ -9,6 +9,7 @@ set(EXPERIMENT_SOURCES
         IS600Processor.cpp
         #LaBr3TestProcessor.cpp
         SheCorrelator.cpp
+        ExtractDataToCSV.cpp
         TemplateExpProcessor.cpp
         TwoChanTimingProcessor.cpp
         VandleOrnl2012Processor.cpp

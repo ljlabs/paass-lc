@@ -315,7 +315,7 @@ const {
             mask = 0x7FFF0000;
             break;
         case R34703:
-            mask = 0x0000FFF7;
+            mask = 0x0000FFFF; // << 0x0000FFF7
             bit = 16;
             break;
         default:
@@ -352,7 +352,7 @@ double XiaListModeDataMask::GetCfdSize() const {
                 val = 32768;
                 break;
             case R34703:
-                val = 65532;
+                val = 32768;
                 break;
             default:
                 break;
@@ -373,7 +373,7 @@ double XiaListModeDataMask::GetCfdSize() const {
                 val = 16384;
                 break;
             case R34703:
-                val = 65532;
+                val = 32768;
                 break;
             default:
                 break;

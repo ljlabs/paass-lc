@@ -142,11 +142,13 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
         } else if (name == "TemplateExpProcessor") {
             vecProcess.push_back(new TemplateExpProcessor());
         } else if (name == "ExtractDataToCSV") {
-            vecProcess.push_back(new ExtractDataToCSV(
-                processor.attribute("gcut").as_double(0.0)
-            ));
+            vecProcess.push_back(new ExtractDataToCSV());
         } else if (name == "NaICoincidenceProcessor") {
-            vecProcess.push_back(new NaICoincidenceProcessor());
+            vecProcess.push_back(new NaICoincidenceProcessor(
+                    processor.attribute("ch1").as_int(1),
+                    processor.attribute("ch2").as_int(1),
+                    processor.attribute("timeWindowInMs").as_double(3.0)
+            ));
         } else if (name == "E11027Processor") {
             vecProcess.push_back(new E11027Processor());
         } else if (name == "TemplateExpProcessor") {

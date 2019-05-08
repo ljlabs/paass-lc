@@ -54,15 +54,18 @@ void NaICoincidenceProcessor::DeclarePlots() {
 }
 
 NaICoincidenceProcessor::NaICoincidenceProcessor() : EventProcessor(OFFSET, RANGE, "NaICoincidenceProcessor") {
-    gCutoff_ = 0.; ///Set the gamma cutoff energy to a default of 0.
-
+    ch1 = 1;
+    ch2 = 1;
+    timeWindowInMs = 1;
     SetAssociatedTypes();
     SetupRootOutput();
 }
 
-NaICoincidenceProcessor::NaICoincidenceProcessor(const double &gcut) : EventProcessor(OFFSET, RANGE, "NaICoincidenceProcessor") {
+NaICoincidenceProcessor::NaICoincidenceProcessor(const int ch1_, const int ch2_, const double timeWindowInMs_) : EventProcessor(OFFSET, RANGE, "NaICoincidenceProcessor") {
     // not running gues cut means to Set the gamma cutoff energy
-    gCutoff_ = gcut;
+    ch1 = ch1_;
+    ch2 = ch2_;
+    timeWindowInMs = timeWindowInMs_;
     SetAssociatedTypes();
     SetupRootOutput();
 }
@@ -85,10 +88,8 @@ void NaICoincidenceProcessor::SetupRootOutput() {
 bool NaICoincidenceProcessor::Process(RawEvent &event) {
     if (!EventProcessor::Process(event))
         return (false);
-    int ch1 = 0;
-    int ch2 = 5;
     int coincidenceSpectrum [coincidenceRange];
-    double timeWindow = 1 * ms;
+    double timeWindow = timeWindowInMs * ms;
     vector <eventProc> data1;
     vector <eventProc> data2;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {

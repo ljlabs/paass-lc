@@ -15,7 +15,7 @@ public:
 
     ///Constructor to take an argument for the gamma cutoff. You can define anything as arguments here. You'll just
     /// add them to DetectoDriverXmlParser::ParseProcessors when its newing the class.
-    NaICoincidenceProcessor(const double &gcut);
+    NaICoincidenceProcessor(const int ch1, const int ch2, const double timeWindowInMs);
 
     ///Default Destructor that doesn't need to do anything. Anything that you new in this processor should be cleaned
     /// up here.
@@ -44,7 +44,10 @@ private:
     /// Method to register our tree and branches when constructing the class
     void SetupRootOutput();
 
-    double gCutoff_; //!< Variable used to set gamma cutoff energy
+    // variables set in config
+    int ch1;
+    int ch2;
+    double timeWindowInMs;
     TTree *tree_; //!< Pointer to the tree that we're going to define in the constructor
 };
 

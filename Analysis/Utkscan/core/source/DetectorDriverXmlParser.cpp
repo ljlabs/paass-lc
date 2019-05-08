@@ -51,6 +51,7 @@
 #include "TwoChanTimingProcessor.hpp"
 #include "VandleOrnl2012Processor.hpp"
 #include "ExtractDataToCSV.hpp"
+#include "NaICoincidenceProcessor.hpp"
 
 using namespace std;
 
@@ -144,6 +145,8 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
             vecProcess.push_back(new ExtractDataToCSV(
                 processor.attribute("gcut").as_double(0.0)
             ));
+        } else if (name == "NaICoincidenceProcessor") {
+            vecProcess.push_back(new NaICoincidenceProcessor());
         } else if (name == "E11027Processor") {
             vecProcess.push_back(new E11027Processor());
         } else if (name == "TemplateExpProcessor") {

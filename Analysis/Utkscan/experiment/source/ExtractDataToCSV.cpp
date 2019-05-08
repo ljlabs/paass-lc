@@ -23,6 +23,7 @@ namespace dammIds {
         const int D_TSIZE = 0; //!< Size of the event
         const int D_GEENERGY = 1; //!< Gamma energy
         const int DD_TENVSGEN = 2; //!< Energy vs Gamma Energy
+        const int D_RAW_ENERGY = 0;//!< Raw energies
     }
 }
 
@@ -33,9 +34,7 @@ using namespace dammIds::experiment;
 /// ID in the experiment namespace above, and then declare it here. The ROOT file contains IDs prefixed with an
 /// "h". This is due to a C++ restriction of variable names starting with a number.
 void ExtractDataToCSV::DeclarePlots() {
-    histo.DeclareHistogram1D(D_TSIZE, S3, "Num Template Evts");
-    histo.DeclareHistogram1D(D_GEENERGY, SA, "Gamma Energy with Cut");
-    histo.DeclareHistogram2D(DD_TENVSGEN, SA, SA, "Template En vs. Ge En");
+    // histo.DeclareHistogram1D(D_RAW_ENERGY, SE, "Raw Energy Spectrum ");
 }
 
 ExtractDataToCSV::ExtractDataToCSV() : EventProcessor(OFFSET, RANGE, "ExtractDataToCSV") {
@@ -56,8 +55,6 @@ ExtractDataToCSV::~ExtractDataToCSV() = default;
 
 ///Associates this Experiment Processor with template and ge detector types
 void ExtractDataToCSV::SetAssociatedTypes() {
-    associatedTypes.insert("template");
-    associatedTypes.insert("clover");
     associatedTypes.insert("NaI");
 }
 
@@ -66,10 +63,6 @@ void ExtractDataToCSV::SetupRootOutput() {
     tree_ = RootHandler::get()->RegisterTree("data", "Tree that stores some of our data");
     RootHandler::get()->RegisterBranch("data", "tof", &tof_, "tof/D");
     RootHandler::get()->RegisterBranch("data", "ten", &tEnergy, "ten/D");
-    // FILE *fp = fopen("/home/kyle/Documents/workspace/honsPhy/paass-lc/install/bin/kyle/example.txt","w");
-    // fprintf(fp,"&tof_ : %f, &tEnergy : %f", &tof_, &tEnergy);
-    // cout << "Write text to be written on file." << endl;
-    // fclose(fp);
 }
 
 ///Main processing of data of interest
@@ -77,7 +70,7 @@ bool ExtractDataToCSV::Process(RawEvent &event) {
     try {
         for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
     
-            double time = (*it)->GetTime();
+            double time = (*it)->GetTime();                 // this is returning unix time in ms
             double energyChannel = (*it)->GetEnergy();
             int slot = (*it)->GetChanID().GetLocation();
             int channel = (*it)->GetChannelNumber();
@@ -87,7 +80,9 @@ bool ExtractDataToCSV::Process(RawEvent &event) {
             // time,energyChannel,slot,chanel <-- csv
             fprintf(fp, "%f,%f,%i,%i \n", time, energyChannel, slot, channel);
             fclose(fp);
+            // histo.Plot(D_RAW_ENERGY + (*it)->GetChannelNumber(), (*it)->GetEnergy());
         }
+        
     } catch (PaassWarning &w) {
         cout << Display::WarningStr("Warning caught at DetectorDriver::ProcessEvent") << endl;
         cout << "\t" << Display::WarningStr(w.what()) << endl;

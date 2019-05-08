@@ -10,6 +10,7 @@ set(EXPERIMENT_SOURCES
         #LaBr3TestProcessor.cpp
         SheCorrelator.cpp
         ExtractDataToCSV.cpp
+        NaICoincidenceProcessor.cpp
         TemplateExpProcessor.cpp
         TwoChanTimingProcessor.cpp
         VandleOrnl2012Processor.cpp

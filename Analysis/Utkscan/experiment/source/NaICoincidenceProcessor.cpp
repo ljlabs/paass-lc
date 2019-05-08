@@ -54,7 +54,7 @@ void NaICoincidenceProcessor::DeclarePlots() {
 }
 
 NaICoincidenceProcessor::NaICoincidenceProcessor() : EventProcessor(OFFSET, RANGE, "NaICoincidenceProcessor") {
-    ch1 = 1;
+    ch1 = 0;
     ch2 = 1;
     timeWindowInMs = 1;
     SetAssociatedTypes();

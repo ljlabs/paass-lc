@@ -39,17 +39,17 @@ void NaICoincidenceProcessor::DeclarePlots() {
     histo.DeclareHistogram1D(
         D_CH1,
         coincidenceRange,
-        "Data from ch 1 used for coincidence"
+        "Data from ch 1 - Raw"
     );
     histo.DeclareHistogram1D(
         D_CH2,
         coincidenceRange,
-        "Data from ch 2 used for coincidence"
+        "Data from ch 2 - Raw"
     );
     histo.DeclareHistogram1D(
         D_COINCIDENCE,
         coincidenceRange,
-        "Processed coincidence Energy Spectrum"
+        "NaI(Tl) Coincidence Det(L) - Det(R)"
     );
 }
 

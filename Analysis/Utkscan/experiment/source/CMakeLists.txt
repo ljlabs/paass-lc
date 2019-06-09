@@ -11,6 +11,7 @@ set(EXPERIMENT_SOURCES
         SheCorrelator.cpp
         ExtractDataToCSV.cpp
         NaICoincidenceProcessor.cpp
+        TimeDifferenceProcessor.cpp
         TemplateExpProcessor.cpp
         TwoChanTimingProcessor.cpp
         VandleOrnl2012Processor.cpp

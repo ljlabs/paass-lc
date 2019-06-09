@@ -52,6 +52,7 @@
 #include "VandleOrnl2012Processor.hpp"
 #include "ExtractDataToCSV.hpp"
 #include "NaICoincidenceProcessor.hpp"
+#include "TimeDifferenceProcessor.hpp"
 
 using namespace std;
 
@@ -145,6 +146,12 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
             vecProcess.push_back(new ExtractDataToCSV());
         } else if (name == "NaICoincidenceProcessor") {
             vecProcess.push_back(new NaICoincidenceProcessor(
+                    processor.attribute("ch1").as_int(1),
+                    processor.attribute("ch2").as_int(1),
+                    processor.attribute("timeWindowInMs").as_double(3.0)
+            ));
+        } else if (name == "TimeDifferenceProcessor") {
+            vecProcess.push_back(new TimeDifferenceProcessor(
                     processor.attribute("ch1").as_int(1),
                     processor.attribute("ch2").as_int(1),
                     processor.attribute("timeWindowInMs").as_double(3.0)

@@ -2,24 +2,24 @@
 ///@brief Example class for experiment specific setups
 ///@author K. L. Jordaan
 ///@date May 8, 2019
-#ifndef __NAICOINCIDENCEPROCESSOR_HPP_
-#define __NAICOINCIDENCEPROCESSOR_HPP_
+#ifndef __TIMEDIFFERENCEPROCESSOR_HPP_
+#define __TIMEDIFFERENCEPROCESSOR_HPP_
 #include "EventProcessor.hpp"
 
 /// A processor that provides a working, concrete example for users to follow when creating a customized experiment
 /// processor.
-class NaICoincidenceProcessor : public EventProcessor {
+class TimeDifferenceProcessor : public EventProcessor {
 public:
     ///Default Constructor
-    NaICoincidenceProcessor();
+    TimeDifferenceProcessor();
 
     ///Constructor to take an argument for the gamma cutoff. You can define anything as arguments here. You'll just
     /// add them to DetectoDriverXmlParser::ParseProcessors when its newing the class.
-    NaICoincidenceProcessor(const int ch1, const int ch2, const double timeWindowInMs);
+    TimeDifferenceProcessor(const int ch1, const int ch2, const double timeWindowInMs);
 
     ///Default Destructor that doesn't need to do anything. Anything that you new in this processor should be cleaned
     /// up here.
-    ~NaICoincidenceProcessor();
+    ~TimeDifferenceProcessor();
 
     /// Declare the plots used in the analysis
     void DeclarePlots();

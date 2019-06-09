@@ -25,12 +25,15 @@ namespace dammIds {
         const int D_CH2 = 1;
         const int D_COINCIDENCE = 2;                // for graphing coincidence data
         const int coincidenceRange = pow(2, 14);    // the number of bins being recorded
-        const int ms = 250 * pow(10, 3);            // number of clock tics in 1 millisecond
+        int ms_ = 4000; //* pow(10, 3);             // period of 1 clock tick in ms
+
+        const int periodOfPulsar = 100;             // this is the period of the 10KHz 
     }   
 }
 
 using namespace std;
 using namespace dammIds::experiment;
+using std::vector;
 
 ///DeclarehistogramXD registers the histograms with ROOT. If you want to define a new histogram add its
 /// ID in the experiment namespace above, and then declare it here. The ROOT file contains IDs prefixed with an
@@ -68,6 +71,8 @@ NaICoincidenceProcessor::NaICoincidenceProcessor(const int ch1_, const int ch2_,
     timeWindowInMs = timeWindowInMs_;
     SetAssociatedTypes();
     SetupRootOutput();
+    vector <eventProc> classData1;
+    vector <eventProc> classData2;
 }
 
 NaICoincidenceProcessor::~NaICoincidenceProcessor() = default;
@@ -88,18 +93,21 @@ void NaICoincidenceProcessor::SetupRootOutput() {
 bool NaICoincidenceProcessor::Process(RawEvent &event) {
     if (!EventProcessor::Process(event))
         return (false);
-    int coincidenceSpectrum [coincidenceRange];
-    double timeWindow = timeWindowInMs * ms;
-    vector <eventProc> data1;
-    vector <eventProc> data2;
+    // int coincidenceSpectrum [coincidenceRange];
+
+    vector <eventProc> data1 = classData1;
+    vector <eventProc> data2 = classData2;
+    double timeWindow = timeWindowInMs;
+    int size = 0;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
         double time = (*it)->GetTime();                 // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
         int channel = (*it)->GetChannelNumber();
+        
         if (channel == ch1) {
             data1.push_back({
-                time,
+                time/ms_,
                 int(energyChannel),
                 slot,
                 channel
@@ -108,26 +116,38 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
         }
         if (channel == ch2) {
             data2.push_back({
-                time,
+                time/ms_,
                 int(energyChannel),
                 slot,
                 channel
             });
             histo.Plot(D_CH2, int(energyChannel));
         }
+        size = size + 1;
     }
+    FILE *fp = fopen("./example.txt","a");
+    // time,energyChannel,slot,chanel <-- csv
+    fprintf(fp, "number of events %d \n", size );
+    fclose(fp);
+    /*
+    while (data1.size() > 0 && data2.size() > 0) {
+        histo.Plot(D_COINCIDENCE, data1[0].energyChannel);
+        data1.erase(data1.begin());
+        data2.erase(data2.begin());
+    }
+*/
     while (data1.size() > 0 && data2.size() > 0)
     {
-        FILE *fp = fopen("./example.txt","a");
-        // time,energyChannel,slot,chanel <-- csv
-        fprintf(fp, abs(data1[0].time - data2[0].time) < timeWindow ? "true" : "false");
-        fclose(fp);
+        // FILE *fp = fopen("./example.txt","a");
+        // // time,energyChannel,slot,chanel <-- csv
+        // fprintf(fp, "time diff in events %f \n", abs(data1[0].time - data2[0].time) );
+        // fclose(fp);
         // do coincidence check
         if (abs(data1[0].time - data2[0].time) < timeWindow) {
             // ignore garbage data < -- this is a place where optimization may occur
-            if (data1[0].energyChannel < coincidenceRange || data1[0].energyChannel >= 0) {
-                histo.Plot(D_COINCIDENCE, data1[0].energyChannel);
-            }
+            //if (data1[0].energyChannel < coincidenceRange || data1[0].energyChannel >= 0) {
+            histo.Plot(D_COINCIDENCE, data1[0].energyChannel);
+            //}
             // remove both data points in coincidence
             data1.erase(data1.begin());
             data2.erase(data2.begin());
@@ -140,6 +160,7 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
             }
         }
     }
+    
     EndProcess();
     return true;
 }

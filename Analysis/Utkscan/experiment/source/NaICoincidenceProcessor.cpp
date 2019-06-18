@@ -100,14 +100,14 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
     double timeWindow = timeWindowInMs;
     int size = 0;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
-        double time = (*it)->GetTime();                 // this is returning unix time in ms
+        double time = (*it)->GetTime() * 4 / 10000; // HighResTimingData(*(*it)).GetHighResTimeInNs(); // to get the time in ms // alot faster but less precise :: (*it)->GetTime();                 // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
         int channel = (*it)->GetChannelNumber();
         
         if (channel == ch1) {
             data1.push_back({
-                time/ms_,
+                time,
                 int(energyChannel),
                 slot,
                 channel
@@ -116,7 +116,7 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
         }
         if (channel == ch2) {
             data2.push_back({
-                time/ms_,
+                time,
                 int(energyChannel),
                 slot,
                 channel
@@ -138,10 +138,10 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
 */
     while (data1.size() > 0 && data2.size() > 0)
     {
-        // FILE *fp = fopen("./example.txt","a");
-        // // time,energyChannel,slot,chanel <-- csv
-        // fprintf(fp, "time diff in events %f \n", abs(data1[0].time - data2[0].time) );
-        // fclose(fp);
+        FILE *fp = fopen("./example.txt","a");
+        // time,energyChannel,slot,chanel <-- csv
+        fprintf(fp, "p1 %lf, p2 %lf, time diff in events %lf \n", data1[0].time, data2[0].time, abs(data1[0].time - data2[0].time));
+        fclose(fp);
         // do coincidence check
         if (abs(data1[0].time - data2[0].time) < timeWindow) {
             // ignore garbage data < -- this is a place where optimization may occur

@@ -27,7 +27,7 @@ namespace experiment
 const int D_CH1 = 0;
 const int D_CH2 = 1;
 const int D_TIME_DELTA = 2;              // for graphing coincidence data
-const int coincidenceRange = pow(2, 15); // the number of bins being recorded
+const int coincidenceRange = pow(2, 14); // the number of bins being recorded
 int ns_ = 4;                             //* pow(10, 3);                // period of one clock tick in nanoSeconds
 
 // const int periodOfPulsar = 100;             // this is the period of the 10KHz
@@ -101,20 +101,20 @@ bool TimeDifferenceProcessor::Process(RawEvent &event)
         return (false);
     // int coincidenceSpectrum [coincidenceRange];
 
-    vector<eventProc> data1 = classData1;
-    vector<eventProc> data2 = classData2;
-    double timeWindow = 100000; // time in nano seconds //timeWindowInMs * ms_;
+    vector<eventProc> data1;
+    vector<eventProc> data2;
+
     int size = 0;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it)
     {
-        double time = (*it)->GetTime(); // this is returning unix time in ms
+        double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); // less prescise timing in clock ticks (*it)->GetTime(); // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
         int channel = (*it)->GetChannelNumber();
 
         if (channel == ch1)
         {
-            data1.push_back({time * ns_, // this is time in nano seconds for a clock time set above
+            data1.push_back({time, // this is time in nano seconds for a clock time set above
                              int(energyChannel),
                              slot,
                              channel});
@@ -122,7 +122,7 @@ bool TimeDifferenceProcessor::Process(RawEvent &event)
         }
         if (channel == ch2)
         {
-            data2.push_back({time * ns_, // this is time in nano seconds for a clock time set above
+            data2.push_back({time, // this is time in nano seconds for a clock time set above
                              int(energyChannel),
                              slot,
                              channel});
@@ -130,11 +130,11 @@ bool TimeDifferenceProcessor::Process(RawEvent &event)
         }
         size = size + 1;
     }
+    /*
     FILE *fp = fopen("./example.txt", "a");
     // time,energyChannel,slot,chanel <-- csv
     fprintf(fp, "number of events %d \n", size);
     fclose(fp);
-    /*
     while (data1.size() > 0 && data2.size() > 0) {
         histo.Plot(D_COINCIDENCE, data1[0].energyChannel);
         data1.erase(data1.begin());
@@ -150,37 +150,14 @@ bool TimeDifferenceProcessor::Process(RawEvent &event)
         // do coincidence check
         if (data1[0].time < data2[0].time)
         {
-            if (int(abs(data1[0].time - data2[0].time) * ns_) < timeWindow)
-            {
-                histo.Plot(D_TIME_DELTA, int(data1[0].time - data2[0].time) * ns_ + pow(2, 14));
+            histo.Plot(D_TIME_DELTA, int(data2[0].time - data1[0].time));
 
-                data1.erase(data1.begin());
-                data2.erase(data2.begin());
-            }
-            else
-            {
-                // remove the oldest data point;
-                if (data1[0].time < data2[0].time)
-                {
-                    data1.erase(data1.begin());
-                }
-                else
-                {
-                    data2.erase(data2.begin());
-                }
-            }
+            data1.erase(data1.begin());
+            data2.erase(data2.begin());
         }
         else
         {
-            // remove the oldest data point;
-            if (data1[0].time < data2[0].time)
-            {
-                data1.erase(data1.begin());
-            }
-            else
-            {
-                data2.erase(data2.begin());
-            }
+            data2.erase(data2.begin());
         }
     }
 

@@ -5,6 +5,7 @@
 #ifndef __NAICOINCIDENCEPROCESSOR_HPP_
 #define __NAICOINCIDENCEPROCESSOR_HPP_
 #include "EventProcessor.hpp"
+#include "HighResTimingData.hpp"
 
 /// A processor that provides a working, concrete example for users to follow when creating a customized experiment
 /// processor.

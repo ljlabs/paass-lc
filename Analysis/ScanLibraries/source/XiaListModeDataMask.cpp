@@ -202,7 +202,7 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetCfdTriggerSourceMask() 
                 break;
             case R34703:
                 mask = 0x40000000;
-                bit = 31;
+                bit = 30;
                 break;
             default:
                 break;
@@ -294,7 +294,6 @@ pair<unsigned int, unsigned int> XiaListModeDataMask::GetTraceOutOfRangeFlagMask
 }
 
 //Trace Length always starts on bit 16 of Word 3.
-// can happen some where else <<< --- kyle
 pair<unsigned int, unsigned int> XiaListModeDataMask::GetTraceLengthMask()
 const {
     if (firmware_ == UNKNOWN || frequency_ == 0)
@@ -315,7 +314,7 @@ const {
             mask = 0x7FFF0000;
             break;
         case R34703:
-            mask = 0x0000FFFF; // << 0x0000FFF7
+            mask = 0x7FFF0000; // << 0x0000FFF7
             bit = 16;
             break;
         default:
@@ -373,7 +372,7 @@ double XiaListModeDataMask::GetCfdSize() const {
                 val = 16384;
                 break;
             case R34703:
-                val = 32768;
+                val = 16384;
                 break;
             default:
                 break;

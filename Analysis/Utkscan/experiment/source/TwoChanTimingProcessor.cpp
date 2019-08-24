@@ -79,11 +79,6 @@ bool TwoChanTimingProcessor::Process(RawEvent &event) {
     HighResTimingData start = (*pulserMap.find(make_pair(0, "start"))).second;
     HighResTimingData stop = (*pulserMap.find(make_pair(0, "stop"))).second;
 
-    FILE *fp = fopen("./example.txt","a");
-    // time,energyChannel,slot,chanel <-- csv
-    fprintf(fp, "start %f, stop %f \n", start.GetHighResTimeInNs(), stop.GetHighResTimeInNs());
-    fclose(fp);
-
     static int trcCounter = 0;
     int bin = 0;
     for (auto it = start.GetTrace().begin(); it != start.GetTrace().end(); it++) {

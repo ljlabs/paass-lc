@@ -49,6 +49,7 @@
 #include "IS600Processor.hpp"
 #include "TemplateExpProcessor.hpp"
 #include "TwoChanTimingProcessor.hpp"
+#include "MultiChannelCoincidenceProcessor.hpp"
 #include "VandleOrnl2012Processor.hpp"
 #include "ExtractDataToCSV.hpp"
 #include "NaICoincidenceProcessor.hpp"
@@ -149,6 +150,12 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
             vecProcess.push_back(new NaICoincidenceProcessor(
                     processor.attribute("ch1").as_int(1),
                     processor.attribute("ch2").as_int(1),
+                    processor.attribute("timeWindowInMs").as_double(3.0)
+            ));
+        } else if (name == "MultiChannelCoincidenceProcessor") {
+            vecProcess.push_back(new MultiChannelCoincidenceProcessor(
+                    StringManipulation::TokenizeString(processor.attribute("startChannels").as_string("medium"), ","),
+                    StringManipulation::TokenizeString(processor.attribute("stopChannels").as_string("medium"), ","),
                     processor.attribute("timeWindowInMs").as_double(3.0)
             ));
         } else if (name == "TimeSpectrumGenerator") {

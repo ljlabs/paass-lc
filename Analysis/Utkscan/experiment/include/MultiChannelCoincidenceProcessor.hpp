@@ -40,26 +40,23 @@ public:
     struct eventProc
     {
         double time; // just number of clock tics since the system was turned on
-        int energyChannel;
+        double energyChannel;
         int slot;
         int channel;
     };
-    std::vector<eventProc> classData1;
-    std::vector<eventProc> classData2;
-    std::vector<std::array<int, 2>> startStopChannels;
+    // variables set in config
+    std::vector<std::array<std::string, 2>> startStopChannels;
+    std::map<std::string, std::vector<eventProc>> allDataMap;
+    TTree *tree_; //!< Pointer to the tree that we're going to define in the constructor
 
 private:
     ///Sets the detector types that are associated with this processor
     void SetAssociatedTypes();
 
     /// Method to register our tree and branches when constructing the class
-    void SetupRootOutput();
+    void SetupRootOutput(int numberOfBranches);
 
-    // variables set in config
-    int ch1;
-    int ch2;
     double timeWindowInMs;
-    TTree *tree_; //!< Pointer to the tree that we're going to define in the constructor
 };
 
 #endif

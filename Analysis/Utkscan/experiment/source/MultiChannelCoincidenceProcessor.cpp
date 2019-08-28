@@ -14,22 +14,22 @@
 #include "CloverProcessor.hpp"
 #include "TemplateProcessor.hpp"
 
-static double coincidenceData;
+static double tStart;
+static double tStop;
+static double tDiff;
 
-namespace dammIds
-{
-///This namespace contains histogram IDs that we want to use. The actual histogram ID will be the number defined
-/// here plus experiment::OFFSET (6050). D_TSIZE has an ID of 6050 and D_GEENERGY has an ID of 6051.
-namespace experiment
-{
-const int D_CH1 = 0;
-const int D_CH2 = 1;
-const int D_COINCIDENCE = 2;             // for graphing coincidence data
-const int coincidenceRange = pow(2, 14); // the number of bins being recorded
+namespace dammIds {
+    ///This namespace contains histogram IDs that we want to use. The actual histogram ID will be the number defined
+    /// here plus experiment::OFFSET (6050). D_TSIZE has an ID of 6050 and D_GEENERGY has an ID of 6051.
+    namespace experiment {
+        const int D_CH1 = 0;
+        const int D_CH2 = 1;
+        const int D_COINCIDENCE = 2;                // for graphing coincidence data
+        const int coincidenceRange = pow(2, 10);    // the number of bins being recorded
 
-const int periodOfPulsar = 100; // this is the period of the 10KHz
-} // namespace experiment
-} // namespace dammIds
+        const int periodOfPulsar = 100;             // this is the period of the 10KHz 
+    }   
+}
 
 using namespace std;
 using namespace dammIds::experiment;
@@ -38,16 +38,28 @@ using std::vector;
 ///DeclarehistogramXD registers the histograms with ROOT. If you want to define a new histogram add its
 /// ID in the experiment namespace above, and then declare it here. The ROOT file contains IDs prefixed with an
 /// "h". This is due to a C++ restriction of variable names starting with a number.
-void MultiChannelCoincidenceProcessor::DeclarePlots()
-{
+void MultiChannelCoincidenceProcessor::DeclarePlots() {
+    histo.DeclareHistogram1D(
+        D_CH1,
+        coincidenceRange,
+        "Data from ch 1 - Raw"
+    );
+    histo.DeclareHistogram1D(
+        D_CH2,
+        coincidenceRange,
+        "Data from ch 2 - Raw"
+    );
+    histo.DeclareHistogram1D(
+        D_COINCIDENCE,
+        coincidenceRange,
+        "Time Spectrum"
+    );
 }
 
-MultiChannelCoincidenceProcessor::MultiChannelCoincidenceProcessor() : EventProcessor(OFFSET, RANGE, "MultiChannelCoincidenceProcessor")
-{
+MultiChannelCoincidenceProcessor::MultiChannelCoincidenceProcessor() : EventProcessor(OFFSET, RANGE, "MultiChannelCoincidenceProcessor") {
     startStopChannels = {};
-    timeWindowInMs = 1;
     SetAssociatedTypes();
-    SetupRootOutput(startStopChannels.size());
+    SetupRootOutput(0);
 }
 
 /// TODO :: the strings of start and stop lists need to be parsed into a vector here
@@ -75,20 +87,19 @@ MultiChannelCoincidenceProcessor::MultiChannelCoincidenceProcessor(
 MultiChannelCoincidenceProcessor::~MultiChannelCoincidenceProcessor() = default;
 
 ///Associates this Experiment Processor with template and ge detector types
-void MultiChannelCoincidenceProcessor::SetAssociatedTypes()
-{
+void MultiChannelCoincidenceProcessor::SetAssociatedTypes() {
     associatedTypes.insert("NaI");
 }
 
 ///Registers the ROOT tree and branches with RootHandler.
-void MultiChannelCoincidenceProcessor::SetupRootOutput(int numberOfBranches)
-{
-    tree_ = RootHandler::get()->RegisterTree("data", "Tree that stores some of our coincidence data");
-    int i = 0;
-        std::string key = startStopChannels[i][0] + " " + startStopChannels[i][1];
-        RootHandler::get()->RegisterBranch("data", "coincidence of channels ", &coincidenceData, "energy/D");
-
+void MultiChannelCoincidenceProcessor::SetupRootOutput(uint numberOfCouples) {
+    tree_ = RootHandler::get()->RegisterTree("data", "Tree that stores some of our data");
+    RootHandler::get()->RegisterBranch("data", "start", &tStart, "tStart/D");
+    RootHandler::get()->RegisterBranch("data", "stop", &tStop, "tStop/D");
+    RootHandler::get()->RegisterBranch("data", "difference", &tDiff, "tDiff/D");
+    //RootHandler::get()->RegisterBranch("data", "start v stop", &tStart, &tStop, "tDiff/D");
 }
+
 
 ///Main processing of data of interest
 bool MultiChannelCoincidenceProcessor::Process(RawEvent &event)
@@ -98,15 +109,14 @@ bool MultiChannelCoincidenceProcessor::Process(RawEvent &event)
     // int coincidenceSpectrum [coincidenceRange];
 
     double timeWindow = timeWindowInMs * 1000; // as the time window is in ns
-    int size = 0;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it)
     {
-        double time = (*it)->GetTime();
+        double time = (*it)->GetTime(); 
         // double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); // HighResTimingData(*(*it)).GetHighResTimeInNs(); // to get the time in ms // alot faster but less precise :: (*it)->GetTime();                 // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
         int channel = (*it)->GetChannelNumber();
-
+        
         std::map<std::string, std::vector<eventProc>>::const_iterator pos = allDataMap.find(to_string(channel));
 
         if (pos == allDataMap.end())
@@ -127,34 +137,32 @@ bool MultiChannelCoincidenceProcessor::Process(RawEvent &event)
     /// loop through each of the coincidence channels
     for (uint i1 = 0; i1 < startStopChannels.size(); i1++)
     {
-        std::vector<eventProc> data1 = allDataMap[startStopChannels[i1][0]];
-        std::vector<eventProc> data2 = allDataMap[startStopChannels[i1][1]];
-        while (data1.size() > 0 && data2.size() > 0)
+        while (allDataMap[startStopChannels[i1][0]].size() > 0 && allDataMap[startStopChannels[i1][1]].size() > 0)
         {
+
+            FILE *fp = fopen("./example.txt", "a");
+            // time,energyChannel,slot,chanel <-- csv
+            fprintf(fp, "%lf, %lf, %lu\n", allDataMap[startStopChannels[i1][0]][0].energyChannel, allDataMap[startStopChannels[i1][1]][0].energyChannel, allDataMap[startStopChannels[i1][0]].size());
+            fclose(fp);
             // do coincidence check
-            if (abs(data1[0].time - data2[0].time) < timeWindow)
+            if (abs(allDataMap[startStopChannels[i1][0]][0].time - allDataMap[startStopChannels[i1][1]][0].time) < timeWindow)
             {
                 // to put data into the tree for viewing
-                std::string key = startStopChannels[i1][0] + " " + startStopChannels[i1][1];
-                coincidenceData = data1[0].energyChannel;
-                FILE *fp = fopen("./example.txt", "a");
-                // time,energyChannel,slot,chanel <-- csv
-                fprintf(fp, "%lf\n", coincidenceData);
-                fclose(fp);
+                tDiff = allDataMap[startStopChannels[i1][0]][0].energyChannel;
                 tree_->Fill();
-                data1.erase(data1.begin());
-                data2.erase(data2.begin());
+                allDataMap[startStopChannels[i1][0]].erase(allDataMap[startStopChannels[i1][0]].begin());
+                allDataMap[startStopChannels[i1][1]].erase(allDataMap[startStopChannels[i1][1]].begin());
             }
             else
             {
                 // remove the oldest data point;
-                if (data1[0].time < data2[0].time)
+                if (allDataMap[startStopChannels[i1][0]][0].time < allDataMap[startStopChannels[i1][1]][0].time)
                 {
-                    data1.erase(data1.begin());
+                    allDataMap[startStopChannels[i1][0]].erase(allDataMap[startStopChannels[i1][0]].begin());
                 }
                 else
                 {
-                    data2.erase(data2.begin());
+                    allDataMap[startStopChannels[i1][1]].erase(allDataMap[startStopChannels[i1][1]].begin());
                 }
             }
         }

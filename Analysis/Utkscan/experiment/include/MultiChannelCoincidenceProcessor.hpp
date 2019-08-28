@@ -54,7 +54,7 @@ private:
     void SetAssociatedTypes();
 
     /// Method to register our tree and branches when constructing the class
-    void SetupRootOutput(int numberOfBranches);
+    void SetupRootOutput(uint numberOfCouples);
 
     double timeWindowInMs;
 };

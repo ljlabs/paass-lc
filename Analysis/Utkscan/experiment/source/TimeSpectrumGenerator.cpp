@@ -28,6 +28,7 @@ namespace dammIds {
         const int coincidenceRange = pow(2, 14);    // the number of bins being recorded
 
         const int periodOfPulsar = 100;             // this is the period of the 10KHz 
+        const int DD_START_VS_STOP = 3;
     }   
 }
 
@@ -54,6 +55,7 @@ void TimeSpectrumGenerator::DeclarePlots() {
         coincidenceRange,
         "Time Spectrum"
     );
+    histo.DeclareHistogram2D(DD_START_VS_STOP, SA, SA, "Template En vs. Ge En");
 }
 
 TimeSpectrumGenerator::TimeSpectrumGenerator() : EventProcessor(OFFSET, RANGE, "TimeSpectrumGenerator") {
@@ -86,7 +88,6 @@ void TimeSpectrumGenerator::SetupRootOutput() {
     RootHandler::get()->RegisterBranch("data", "start", &tStart, "tStart/D");
     RootHandler::get()->RegisterBranch("data", "stop", &tStop, "tStop/D");
     RootHandler::get()->RegisterBranch("data", "difference", &tDiff, "tDiff/D");
-    //RootHandler::get()->RegisterBranch("data", "start v stop", &tStart, &tStop, "tDiff/D");
 }
 
 ///Main processing of data of interest
@@ -95,9 +96,11 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
         return (false);
     // int coincidenceSpectrum [coincidenceRange];
 
-    vector<eventProc> data1;
-    vector<eventProc> data2;
+    vector<double> data1;
+    vector<double> data2;
     int size = 0;
+    int start = -1;
+    int stop = -1;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
         double time = (*it)->GetTime(); 
         // double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); // HighResTimingData(*(*it)).GetHighResTimeInNs(); // to get the time in ms // alot faster but less precise :: (*it)->GetTime();                 // this is returning unix time in ms
@@ -106,44 +109,35 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
         int channel = (*it)->GetChannelNumber();
         
         if (channel == ch1) {
-            data1.push_back({
-                time,
-                int(energyChannel),
-                slot,
-                channel
-            });
+            data1.push_back(
+                time);
             histo.Plot(D_CH1, int(energyChannel));
-        }
+        } 
         if (channel == ch2) {
-            data2.push_back({
-                time,
-                int(energyChannel),
-                slot,
-                channel
-            });
+            data2.push_back(
+                time);
             histo.Plot(D_CH2, int(energyChannel));
+        } 
+        while (data1.size() > 0 && data2.size() > 0)
+        { 
+            tStart = data1.back();
+            tStop = data2.back();
+
+            histo.Plot(DD_START_VS_STOP, tStart, tStop);
+            tDiff = tStart - tStop;
+            tree_->Fill();
+
+            histo.Plot(D_COINCIDENCE, 300.0+tDiff);
+            FILE *fp = fopen("./example.txt","a");
+            // time,energyChannel,slot,chanel <-- csv
+            fprintf(fp, "%lf, %lf\n", tStart, tStop);
+            fclose(fp);
+            // remove both data points in coincidence
+            data1.clear();
+            data2.clear();
         }
-        size = size + 1;
     }
     
-    while (data1.size() > 0 && data2.size() > 0)
-    { 
-        // do coincidence check
-        if ((data2[0].time - data1[0].time + pow(2, 13)) < pow(2, 14) && (data2[0].time - data1[0].time) + pow(2, 13) >= 0) {
-            histo.Plot(D_COINCIDENCE, data2[0].time - data1[0].time + pow(2, 13));
-        }
-        tStart = data1[0].time;
-        tStop = data2[0].time;
-        tDiff = tStart - tStop;
-        tree_->Fill();
-        FILE *fp = fopen("./example.txt","a");
-        // time,energyChannel,slot,chanel <-- csv
-        fprintf(fp, "%lf, %lf\n", tStart, tStop);
-        fclose(fp);
-        // remove both data points in coincidence
-        data1.erase(data1.begin());
-        data2.erase(data2.begin());
-    }
     
     EndProcess();
     return true;

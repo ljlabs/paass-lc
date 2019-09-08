@@ -109,11 +109,19 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
         int channel = (*it)->GetChannelNumber();
         
         if (channel == ch1) {
+            FILE *fp = fopen("./example.txt","a");
+            // time,energyChannel,slot,chanel <-- csv
+            fprintf(fp, "%lf,%lf,%li,%li \n", time, energyChannel, slot, channel);
+            fclose(fp);
             data1.push_back(
                 time);
             histo.Plot(D_CH1, int(energyChannel));
         } 
         if (channel == ch2) {
+            FILE *fp = fopen("./example.txt","a");
+            // time,energyChannel,slot,chanel <-- csv
+            fprintf(fp, "%lf,%lf,%li,%li \n", time, energyChannel, slot, channel);
+            fclose(fp);
             data2.push_back(
                 time);
             histo.Plot(D_CH2, int(energyChannel));
@@ -124,14 +132,10 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
             tStop = data2.back();
 
             histo.Plot(DD_START_VS_STOP, tStart, tStop);
-            tDiff = tStart - tStop;
+            tDiff = tStop - tStart;
             tree_->Fill();
 
             histo.Plot(D_COINCIDENCE, 300.0+tDiff);
-            FILE *fp = fopen("./example.txt","a");
-            // time,energyChannel,slot,chanel <-- csv
-            fprintf(fp, "%lf, %lf\n", tStart, tStop);
-            fclose(fp);
             // remove both data points in coincidence
             data1.clear();
             data2.clear();

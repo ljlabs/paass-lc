@@ -136,7 +136,7 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
         data1.erase(data1.begin());
         data2.erase(data2.begin());
     }
-*/
+    */
     while (data1.size() > 0 && data2.size() > 0)
     {
         FILE *fp = fopen("./example.txt","a");

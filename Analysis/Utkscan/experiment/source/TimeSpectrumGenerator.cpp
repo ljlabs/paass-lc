@@ -88,6 +88,7 @@ void TimeSpectrumGenerator::SetupRootOutput() {
     RootHandler::get()->RegisterBranch("data", "start", &tStart, "tStart/D");
     RootHandler::get()->RegisterBranch("data", "stop", &tStop, "tStop/D");
     RootHandler::get()->RegisterBranch("data", "difference", &tDiff, "tDiff/D");
+    RootHandler::get()->RegisterBranch("data", "difference", &tDiff, "tDiff/D");
 }
 
 ///Main processing of data of interest
@@ -102,26 +103,18 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
     int start = -1;
     int stop = -1;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
-        double time = (*it)->GetTime(); 
+        double time = (*it)->GetTime() * 8; // 8 NS / SYSTEM Clock 
         // double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); // HighResTimingData(*(*it)).GetHighResTimeInNs(); // to get the time in ms // alot faster but less precise :: (*it)->GetTime();                 // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
         int channel = (*it)->GetChannelNumber();
         
         if (channel == ch1) {
-            FILE *fp = fopen("./example.txt","a");
-            // time,energyChannel,slot,chanel <-- csv
-            fprintf(fp, "%lf,%lf,%li,%li \n", time, energyChannel, slot, channel);
-            fclose(fp);
             data1.push_back(
                 time);
             histo.Plot(D_CH1, int(energyChannel));
         } 
         if (channel == ch2) {
-            FILE *fp = fopen("./example.txt","a");
-            // time,energyChannel,slot,chanel <-- csv
-            fprintf(fp, "%lf,%lf,%li,%li \n", time, energyChannel, slot, channel);
-            fclose(fp);
             data2.push_back(
                 time);
             histo.Plot(D_CH2, int(energyChannel));
@@ -129,11 +122,16 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
         while (data1.size() > 0 && data2.size() > 0)
         { 
             tStart = data1.back();
-            tStop = data2.back();
+            tStop = data2.back()-300;
 
             histo.Plot(DD_START_VS_STOP, tStart, tStop);
             tDiff = tStop - tStart;
             tree_->Fill();
+
+            FILE *fp = fopen("./example.txt","a");
+            // time,energyChannel,slot,chanel <-- csv
+            fprintf(fp, "%lf\n", tDiff);
+            fclose(fp);
 
             histo.Plot(D_COINCIDENCE, 300.0+tDiff);
             // remove both data points in coincidence

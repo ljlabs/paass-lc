@@ -65,10 +65,11 @@ TimeSpectrumGenerator::TimeSpectrumGenerator() : EventProcessor(OFFSET, RANGE, "
     SetupRootOutput();
 }
 
-TimeSpectrumGenerator::TimeSpectrumGenerator(const int ch1_, const int ch2_) : EventProcessor(OFFSET, RANGE, "TimeSpectrumGenerator") {
+TimeSpectrumGenerator::TimeSpectrumGenerator(const int ch1_, const int ch2_, const double timeCalibration_) : EventProcessor(OFFSET, RANGE, "TimeSpectrumGenerator") {
     // not running gues cut means to Set the gamma cutoff energy
     ch1 = ch1_;
     ch2 = ch2_;
+    timeCalibration = timeCalibration_;
     SetAssociatedTypes();
     SetupRootOutput();
     vector <eventProc> classData1;
@@ -103,7 +104,10 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
     int stop = -1;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
         double time = (*it)->GetTime() * 8; // 8 NS / SYSTEM Clock 
-        // double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); // HighResTimingData(*(*it)).GetHighResTimeInNs(); // to get the time in ms // alot faster but less precise :: (*it)->GetTime();                 // this is returning unix time in ms
+        // double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); 
+        // HighResTimingData(*(*it)).GetHighResTimeInNs(); 
+        // to get the time in ms // alot faster but less precise :: (*it)->GetTime();
+        // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
         int channel = (*it)->GetChannelNumber();
@@ -121,7 +125,7 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
         while (data1.size() > 0 && data2.size() > 0)
         { 
             tStart = data1.back();
-            tStop = data2.back();
+            tStop = data2.back() + timeCalibration;
 
             histo.Plot(DD_START_VS_STOP, tStart, tStop);
             tDiff = tStop - tStart;

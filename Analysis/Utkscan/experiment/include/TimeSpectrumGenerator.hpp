@@ -16,7 +16,7 @@ public:
 
     ///Constructor to take an argument for the gamma cutoff. You can define anything as arguments here. You'll just
     /// add them to DetectoDriverXmlParser::ParseProcessors when its newing the class.
-    TimeSpectrumGenerator(const int ch1, const int ch2);
+    TimeSpectrumGenerator(const int ch1, const int ch2, const double timeCalibration);
 
     ///Default Destructor that doesn't need to do anything. Anything that you new in this processor should be cleaned
     /// up here.
@@ -39,6 +39,7 @@ public:
     };
     std::vector <eventProc> classData1;
     std::vector <eventProc> classData2;
+    double timeCalibration = 0;
 
 private:
     ///Sets the detector types that are associated with this processor

@@ -150,7 +150,8 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
             vecProcess.push_back(new NaICoincidenceProcessor(
                     processor.attribute("ch1").as_int(1),
                     processor.attribute("ch2").as_int(1),
-                    processor.attribute("timeWindowInMs").as_double(3.0)
+                    processor.attribute("timeWindowInMs").as_double(3.0),
+                    processor.attribute("timeCalibration").as_double(0)
             ));
         } else if (name == "MultiChannelCoincidenceProcessor") {
             vecProcess.push_back(new MultiChannelCoincidenceProcessor(
@@ -161,7 +162,8 @@ vector<EventProcessor *> DetectorDriverXmlParser::ParseProcessors(const pugi::xm
         } else if (name == "TimeSpectrumGenerator") {
             vecProcess.push_back(new TimeSpectrumGenerator(
                     processor.attribute("ch1").as_int(1),
-                    processor.attribute("ch2").as_int(1)
+                    processor.attribute("ch2").as_int(1),
+                    processor.attribute("timeCalibration").as_double(0)
             ));
         } else if (name == "TimeDifferenceProcessor") {
             vecProcess.push_back(new TimeDifferenceProcessor(

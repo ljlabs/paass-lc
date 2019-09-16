@@ -64,11 +64,12 @@ NaICoincidenceProcessor::NaICoincidenceProcessor() : EventProcessor(OFFSET, RANG
     SetupRootOutput();
 }
 
-NaICoincidenceProcessor::NaICoincidenceProcessor(const int ch1_, const int ch2_, const double timeWindowInMs_) : EventProcessor(OFFSET, RANGE, "NaICoincidenceProcessor") {
+NaICoincidenceProcessor::NaICoincidenceProcessor(const int ch1_, const int ch2_, const double timeWindowInMs_, const double timeCalibration_) : EventProcessor(OFFSET, RANGE, "NaICoincidenceProcessor") {
     // not running gues cut means to Set the gamma cutoff energy
     ch1 = ch1_;
     ch2 = ch2_;
     timeWindowInMs = timeWindowInMs_;
+    timeCalibration = timeCalibration_;
     SetAssociatedTypes();
     SetupRootOutput();
     vector <eventProc> classData1;
@@ -126,7 +127,9 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
         }
         while (data1.size() > 0 && data2.size() > 0)
         { 
-            if (abs(data1.back().time - data2.back().time) < timeWindowInMs * 1000) {
+            double tStart = data1.back().time;
+            double tStop = data2.back().time + timeCalibration;
+            if (abs(tStop - tStart) < timeWindowInMs * 1000) {
                 tEnergy = data1.back().energyChannel;
                 tree_->Fill();
                 histo.Plot(D_COINCIDENCE, tEnergy);

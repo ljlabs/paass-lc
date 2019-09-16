@@ -88,7 +88,6 @@ void TimeSpectrumGenerator::SetupRootOutput() {
     RootHandler::get()->RegisterBranch("data", "start", &tStart, "tStart/D");
     RootHandler::get()->RegisterBranch("data", "stop", &tStop, "tStop/D");
     RootHandler::get()->RegisterBranch("data", "difference", &tDiff, "tDiff/D");
-    RootHandler::get()->RegisterBranch("data", "difference", &tDiff, "tDiff/D");
 }
 
 ///Main processing of data of interest
@@ -122,7 +121,7 @@ bool TimeSpectrumGenerator::Process(RawEvent &event) {
         while (data1.size() > 0 && data2.size() > 0)
         { 
             tStart = data1.back();
-            tStop = data2.back()-300;
+            tStop = data2.back();
 
             histo.Plot(DD_START_VS_STOP, tStart, tStop);
             tDiff = tStop - tStart;

@@ -95,12 +95,12 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
         return (false);
     // int coincidenceSpectrum [coincidenceRange];
 
-    vector <eventProc> data1 = classData1;
-    vector <eventProc> data2 = classData2;
+    vector <eventProc> data1;
+    vector <eventProc> data2;
     double timeWindow = timeWindowInMs * 1000; // as the time window is in ns
     int size = 0;
     for (vector<ChanEvent *>::const_iterator it = event.GetEventList().begin(); it != event.GetEventList().end(); ++it) {
-        double time = (*it)->GetTime(); 
+        double time = (*it)->GetTime() * 8; // 8 NS / SYSTEM Clock 
         // double time = HighResTimingData(*(*it)).GetHighResTimeInNs(); // HighResTimingData(*(*it)).GetHighResTimeInNs(); // to get the time in ms // alot faster but less precise :: (*it)->GetTime();                 // this is returning unix time in ms
         double energyChannel = (*it)->GetEnergy();
         int slot = (*it)->GetChanID().GetLocation();
@@ -124,41 +124,20 @@ bool NaICoincidenceProcessor::Process(RawEvent &event) {
             });
             histo.Plot(D_CH2, int(energyChannel));
         }
-        size = size + 1;
-    }
-    FILE *fp = fopen("./example.txt","a");
-    // time,energyChannel,slot,chanel <-- csv
-    fprintf(fp, "number of events %d \n", size );
-    fclose(fp);
-    /*
-    while (data1.size() > 0 && data2.size() > 0) {
-        histo.Plot(D_COINCIDENCE, data1[0].energyChannel);
-        data1.erase(data1.begin());
-        data2.erase(data2.begin());
-    }
-    */
-    while (data1.size() > 0 && data2.size() > 0)
-    {
-        FILE *fp = fopen("./example.txt","a");
-        // time,energyChannel,slot,chanel <-- csv
-        fprintf(fp, "p1 %lf, p2 %lf, time diff in events %lf \n", data1[0].time, data2[0].time, abs(data1[0].time - data2[0].time));
-        fclose(fp);
-        // do coincidence check
-        if (abs(data1[0].time - data2[0].time) < timeWindow) {
-            // ignore garbage data < -- this is a place where optimization may occur
-            //if (data1[0].energyChannel < coincidenceRange || data1[0].energyChannel >= 0) {
-            histo.Plot(D_COINCIDENCE, data1[0].energyChannel);
-            //}
-            // remove both data points in coincidence
-            data1.erase(data1.begin());
-            data2.erase(data2.begin());
-        } else {
-            // remove the oldest data point;
-            if (data1[0].time < data2[0].time) {
-                data1.erase(data1.begin());
-            } else {
-                data2.erase(data2.begin());
+        while (data1.size() > 0 && data2.size() > 0)
+        { 
+            if (abs(data1.back().time - data2.back().time) < timeWindowInMs * 1000) {
+                tEnergy = data1.back().energyChannel;
+                tree_->Fill();
+                histo.Plot(D_COINCIDENCE, tEnergy);
+
+                FILE *fp = fopen("./example.txt","a");
+                // time,energyChannel,slot,chanel <-- csv
+                fprintf(fp, "%lf\n", tEnergy);
+                fclose(fp);
             }
+            data1.clear();
+            data2.clear();
         }
     }
     
